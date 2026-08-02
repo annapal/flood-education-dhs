@@ -1,0 +1,3 @@
+"scenario","coef_observed","coef_reassigned_mean","coef_reassigned_lo","coef_reassigned_hi","migrant_fraction","n_draws","who"
+"Differential",0.247619134977822,0.32146877252304,0.229103792573294,0.428046500625815,0.107987811209534,100,"mother"
+"Nondifferential",0.247619134977822,0.155659797238213,0.0692755921784763,0.252668410108287,0.107987811209534,100,"mother"

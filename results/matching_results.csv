@@ -1,0 +1,2 @@
+"term","estimate","std.error","statistic","p.value","conf.low","conf.high","data"
+"flooded_10km_age_5_or_6",0.00408813781121068,0.00119407847009673,3.42367600923206,0.000618239688803278,0.00174773696850831,0.00642853865391305,"flood_56_age_10_matched"
