@@ -8,17 +8,17 @@ plot_results <- function() {
   results <- all_results %>%
     filter(scenario %in% c(
       "main", "pop_weight", "no_cluster", "no_covariates", "only_wealth",
-      "only_sex", "hh_covariates", "main_12", "main_15"
+      "only_sex", "hh_covariates", "adj_temp", "main_12", "main_15"
     )) %>%
     mutate(scenario = factor(scenario, levels = c(
       "main", "pop_weight", "no_cluster", "no_covariates", "only_wealth",
-      "only_sex", "hh_covariates", "main_12", "main_15", "main_primary"
+      "only_sex", "hh_covariates", "adj_temp", "main_12", "main_15", "main_primary"
     ))) %>%
     arrange(scenario) %>%
     mutate(
       scen = c("main", "weighted by\n population", "no cluster\n FE", "no covariates",
                "only wealth\n covariate", "only sex\n covariate", "add household\n covariates",
-               "restrict\n age 12", "restrict\n age 15")
+               "adjusted for\n temperature", "restrict\n age 12", "restrict\n age 15")
     ) %>%
     select(estimate, conf.low, conf.high, scen)
 
@@ -33,6 +33,7 @@ plot_results <- function() {
   results <- bind_rows(results, matched)
 
   results$scen <- factor(results$scen, levels = rev(unique(results$scen)))
+  results$scen <- fct_relevel(results$scen, "adjusted for\n temperature")  # first level plots at the bottom
   results$is_main <- results$scen == "main"
   ggplot(results, aes(x = scen, y = estimate*100, ymin = conf.low*100, ymax = conf.high*100, color = is_main)) +
     geom_pointrange(aes(ymin = conf.low*100, ymax = conf.high*100), linewidth = 0.3, size = 0.5) +

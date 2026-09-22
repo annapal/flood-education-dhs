@@ -17,6 +17,9 @@ merge_geocodes(files)
 # Link GFD to dhs clusters (saved in data/flood_clusters)
 # process_flood_tifs() # This takes a long time
 
+# Download ERA5-Land temperature (saved in ~/data/era5_cluster_year.rds)
+# download_era5_temp() # Takes a long time, needs a CDS token
+
 # Merge all data together (saved in "data/dhs_dat_combined.rds")
 merge_country_data(files)
 
@@ -47,6 +50,8 @@ run_models(model_specs)
 # Run additional sensitivity analyses
 run_single_flood_analysis() # (outputs saved in results/)
 run_matching_analysis() # (outputs saved in results/)
+hazard_correlations() # Correlation with other GDIS hazards (figure saved in figures/)
+test_flooded_dist2() # Spillover 10-20km (outputs saved in results/ and figures/)
 
 # Plot the results (saved in figures/)
 plot_results()

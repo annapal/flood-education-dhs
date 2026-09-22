@@ -56,7 +56,15 @@ model_specs <- list(
     weights = ~weight,
     data = "flood_56_age_10"
   ),
-  
+
+  # Full model adjusted for mean temperature over the exposure window
+  adj_temp = list(
+    formula = no_education ~ flooded_10km_age_5_or_6 + hv104 + hv270_numeric + temp_z |
+      clustid + country_year,
+    weights = ~weight,
+    data = "flood_56_age_10"
+  ),
+
   ## Strata
   
   # Model with country-level coefficients

@@ -97,6 +97,39 @@ run_models <- function(model_specs) {
                                      levels = c("not flooded", "<5000", "5000-100000", ">100000"))
       )
 
+    # ERA5 temperature over each child's exposure window (year_age_5 to year_age_6)
+    annual_era5 <- readRDS(path.expand("~/data/era5_cluster_year.rds"))
+
+    # One row per cluster per two-year window
+    clusters <- dhs_dat %>%
+      select(clustid) %>%
+      distinct(clustid)
+
+    windows <- tibble(year_start = 2000:2017) %>%
+      mutate(year_end = year_start + 1)
+
+    cluster_years <- tidyr::crossing(clusters, windows) %>%
+      arrange(clustid, year_start)
+
+    # Window mean is the average of the two annual means (12 months each, so equally weighted)
+    cluster_years <- cluster_years %>%
+      left_join(rename(annual_era5, temp_start = temp_c),
+                by = c("clustid", "year_start" = "year")) %>%
+      left_join(rename(annual_era5, temp_end = temp_c),
+                by = c("clustid", "year_end" = "year")) %>%
+      mutate(mean_temp = (temp_start + temp_end) / 2) %>%
+      select(-temp_start, -temp_end)
+
+    # Standardise each window against the cluster's own 2000-2018 distribution
+    cluster_years <- cluster_years %>%
+      group_by(clustid) %>%
+      mutate(temp_z = (mean_temp - mean(mean_temp, na.rm = TRUE)) / sd(mean_temp, na.rm = TRUE)) %>%
+      ungroup()
+
+    dhs_dat <- dhs_dat %>%
+      left_join(select(cluster_years, clustid, year_age_5 = year_start, mean_temp, temp_z),
+                by = c("clustid", "year_age_5"))
+
     # Run the scenarios
     for (scen in by_data[[datset]]) {
       params <- model_specs[[scen]]
