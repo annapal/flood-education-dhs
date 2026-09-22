@@ -3,9 +3,11 @@
 
 make_flood_event_table <- function() {
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   # Number dead / affected come from FloodArchive, keyed on DFO id
+  require_input("data/FloodArchive.xlsx", flood_archive_source)
   flood_arc <- read_xlsx("data/FloodArchive.xlsx") %>%
     mutate(flood_id = paste0("DFO_", ID)) %>%
     select(flood_id, Dead, Displaced)

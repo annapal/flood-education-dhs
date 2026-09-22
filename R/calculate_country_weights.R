@@ -7,6 +7,7 @@ calculate_country_weights <- function() {
   countries <- read.csv("data/countries.csv")$dhs_cde
   
   # Get population data from WPP
+  require_input("data/population/WPP2024_Demographic_Indicators_Medium.csv", wpp_source)
   pop_dat <- read.csv("data/population/WPP2024_Demographic_Indicators_Medium.csv")
   
   # Add DHS country codes & filter data

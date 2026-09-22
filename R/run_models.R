@@ -15,6 +15,7 @@ run_models <- function(model_specs) {
   for (datset in names(by_data)) {
     
     # Load the dataset
+    require_input(paste0("data/analysis_data/", datset, ".rds"), analysis_data_source)
     dhs_dat <- readRDS(paste0("data/analysis_data/", datset, ".rds"))
     
     # Calculate baseline schooling rate
@@ -60,6 +61,7 @@ run_models <- function(model_specs) {
       )
 
     # Flood impacts for the exposure flood: prefer age-6, fall back to age-5
+    require_input("data/FloodArchive.xlsx", flood_archive_source)
     flood_arc <- read_xlsx("data/FloodArchive.xlsx") %>%
       mutate(flood_id = paste0("DFO_", ID)) %>%
       select(flood_id, Dead, Displaced)
@@ -98,6 +100,8 @@ run_models <- function(model_specs) {
       )
 
     # ERA5 temperature over each child's exposure window (year_age_5 to year_age_6)
+    require_input("~/data/era5_cluster_year.rds",
+                  "Produced by download_era5_temp(); this step is commented out in _run.R and must be run once")
     annual_era5 <- readRDS(path.expand("~/data/era5_cluster_year.rds"))
 
     # One row per cluster per two-year window

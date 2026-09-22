@@ -3,6 +3,7 @@
 
 make_summary_table <- function() {
   
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dhs_dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   # Restrict to the main model's estimation sample so per-country Ns match it

@@ -9,6 +9,7 @@ download_era5_temp <- function() {
   if (nzchar(cds_key)) wf_set_key(key = cds_key)
   stopifnot(nzchar(wf_get_key()))
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   clusters <- readRDS("data/analysis_data/flood_56_age_10.rds") %>%
     select(clustid, LATNUM, LONGNUM) %>%
     distinct(clustid, .keep_all = TRUE) %>%

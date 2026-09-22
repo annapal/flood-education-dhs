@@ -4,6 +4,7 @@
 calculate_no_households <- function() {
   
   # Get population data from WPP
+  require_input("data/population/WPP2024_Demographic_Indicators_Medium.csv", wpp_source)
   pop_dat <- read.csv("data/population/WPP2024_Demographic_Indicators_Medium.csv")
   
   # Add DHS country codes
@@ -14,6 +15,8 @@ calculate_no_households <- function() {
     mutate(population = TPopulation1Jan*1000)
   
   # Get household size data from CORESIDENCE
+  require_input("data/population/12721630/A0_CORESIDENCE_NATIONAL_DATASET_2024.csv",
+                coresidence_source)
   house_dat <- read.csv("data/population/12721630/A0_CORESIDENCE_NATIONAL_DATASET_2024.csv")
   house_dat$dhs_cde <- countrycode(house_dat$C1, "iso3c", "dhs", warn=FALSE)
   house_dat <- house_dat %>%

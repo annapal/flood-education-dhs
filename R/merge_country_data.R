@@ -5,9 +5,13 @@ merge_country_data <- function(files) {
   
   # Get DHS file names
   m_files <- list.files("data/merged_dhs/", full.names = FALSE)
-  
+  require_found(m_files, ".rds files", "data/merged_dhs/",
+                "Produced by merge_geocodes() earlier in _run.R")
+
   # Read in all the flood data
   f_files <- list.files("data/flood_clusters/", full.names = TRUE)
+  require_found(f_files, ".rds files", "data/flood_clusters/",
+                "Produced by process_flood_tifs(); this step is commented out in _run.R and must be run once")
   flood_data <- f_files %>%
     lapply(readRDS) %>%
     bind_rows() %>%
@@ -17,6 +21,7 @@ merge_country_data <- function(files) {
            start_date, end_date, dfo_main_cause, dfo_id)
   
   # Read in flood archive for additional variables
+  require_input("data/FloodArchive.xlsx", flood_archive_source)
   flood_arc <- read_xlsx("data/FloodArchive.xlsx")
   flood_arc$flood_id <- paste("DFO_", flood_arc$ID, sep="")
   

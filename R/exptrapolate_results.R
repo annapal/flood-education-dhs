@@ -10,6 +10,8 @@ exptrapolate_results <- function(dat_path) {
   world <- world_all
   
   # Get data from world population prospects
+  require_input("data/population/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.csv",
+                wpp_source)
   wpp_dat <- read.csv("data/population/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.csv") %>%
     filter(ISO3_code %in% world$GID_0, Time %in% 2000:2018, AgeGrp %in% 5:9)
   
@@ -33,7 +35,8 @@ exptrapolate_results <- function(dat_path) {
                   full.names = TRUE,
                   ignore.case = TRUE,
                   recursive = TRUE)
-  
+  require_found(f, ".tif files", paste0(dat_path, "/gfd_v1_4"), gfd_source)
+
   # Dataframe to store results
   all_dat <- data.frame()
   
@@ -60,6 +63,8 @@ exptrapolate_results <- function(dat_path) {
       colnames(prop_year) <- c("iso3", "prop")
 
       # Population of 5-9 year olds by country
+      require_input(paste0(dat_path, "/worldpop/global_", sex, "_5_", year, "_1km.tif"),
+                    worldpop_source)
       pop_dat <- rast(paste0(dat_path, "/worldpop/global_", sex, "_5_", year, "_1km.tif"))
       pop_10km_deg <- aggregate(pop_dat, fact = 10, fun = sum, na.rm = TRUE) # Convert to 10km grid cells
       world <- project(world, pop_10km_deg)

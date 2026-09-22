@@ -7,6 +7,7 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   v104 <- paste0(who, "_v104")
   v106 <- paste0(who, "_v106")
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   # Restrict to the main model's estimation sample so Ns match the regression

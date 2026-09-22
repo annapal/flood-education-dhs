@@ -3,6 +3,7 @@
 
 plot_proportions <- function() {
   
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dhs_dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
   
   # Proportion receiving no schooling & prop exposed to flood

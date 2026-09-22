@@ -3,6 +3,7 @@
 
 plot_map_figure <- function() {
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dhs_dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
   countries <- countrycode(unique(substr(dhs_dat$clustid, 1, 2)), "dhs", "iso3c")
 
@@ -57,6 +58,8 @@ plot_map_figure <- function() {
 
   # Panel A: flood duration -------------------------------------------------
 
+  require_input("data/global_flood_length.tif",
+                "Produced by make_flood_raster(); this step is commented out in _run.R and must be run once")
   total_flood_length <- rast("data/global_flood_length.tif")
   total_flood_length[total_flood_length == 0] <- NA
 

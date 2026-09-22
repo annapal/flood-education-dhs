@@ -6,6 +6,7 @@ run_matching_analysis <- function() {
   need <- c("flooded_10km_age_5_or_6", "hv104", ps_vars, "country_id", "clustid",
             "no_education", "weight")
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dat <- readRDS("data/analysis_data/flood_56_age_10.rds") %>%
     filter(if_all(all_of(need), ~ !is.na(.))) %>%
     mutate(row_id = row_number())

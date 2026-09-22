@@ -3,6 +3,7 @@
 
 run_single_flood_analysis <- function() {
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   # Gather every (cluster, flood event, year) the data records across ages 0-14

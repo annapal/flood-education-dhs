@@ -10,6 +10,7 @@ make_flood_raster <- function(dat_path) {
     full.names = TRUE,
     ignore.case = TRUE
   )
+  require_found(tif_files, ".tif files", paste0(dat_path, "/gfd_v1_4/"), gfd_source)
 
   # Step 2: Define a global grid template
   global_template <- rast(

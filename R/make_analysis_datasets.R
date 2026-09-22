@@ -2,6 +2,8 @@
 make_analysis_datasets <- function(dat_path = "~/data") {
   
   # Read in the data
+  require_input("data/dhs_dat_combined.rds",
+                "Produced by merge_country_data() earlier in _run.R")
   dhs_dat_combined <- readRDS("data/dhs_dat_combined.rds")
   if (inherits(dhs_dat_combined, "sf")) {
     dhs_dat_combined <- sf::st_drop_geometry(dhs_dat_combined)
@@ -12,6 +14,8 @@ make_analysis_datasets <- function(dat_path = "~/data") {
     filter(!is.na(ir_file)) %>%
     transmute(dta_name = sub(".*dhs/([^/]+)/.*", "\\1", dta_file),
               source_file = path.expand(ir_file))
+  require_input("data/ir_mr_extract.rds",
+                "Produced by make_ir_extract() earlier in _run.R")
   ir_mr <- readRDS("data/ir_mr_extract.rds") %>%
     filter(!is.na(v001), !is.na(v002), !is.na(v003))
   mother_ir <- ir_mr %>%

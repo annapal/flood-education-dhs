@@ -14,7 +14,9 @@ process_flood_tifs <- function(dat_path) {
                           recursive = TRUE, 
                           full.names = TRUE, 
                           ignore.case = TRUE)
-  
+  require_found(geo_files, ".shp files", paste0(dat_path, "/geocodes"),
+                "DHS Program GPS datasets, https://dhsprogram.com/ (README step 1)")
+
   # Read in files
   shape_list <- lapply(geo_files, function(f) {
     st_read(f, quiet = TRUE) %>%
@@ -29,8 +31,9 @@ process_flood_tifs <- function(dat_path) {
   clust_proj <- st_transform(all_clust, 3857)
   
   # Get flood event names
-  events <- basename(list.dirs(paste0(dat_path, "/gfd_v1_4"), 
+  events <- basename(list.dirs(paste0(dat_path, "/gfd_v1_4"),
                                recursive = FALSE, full.names = TRUE))
+  require_found(events, "event folders", paste0(dat_path, "/gfd_v1_4"), gfd_source)
   
   for (i in 1:length(events)) {
     # Get event name and ID

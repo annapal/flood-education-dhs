@@ -2,6 +2,8 @@
 plot_results <- function() {
   
   # Import the results CSV
+  require_input(c("results/results.csv", "results/single_flood_results.csv",
+                  "results/matching_results.csv"), results_source)
   all_results <- read.csv("results/results.csv")
   
   # Plot the main results with different specifications

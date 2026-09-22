@@ -4,6 +4,7 @@
 hazard_correlations <- function() {
 
   gdis_path <- path.expand("~/data/pend-gdis-1960-2018-disasterlocations-gpkg/pend-gdis-1960-2018-disasterlocations.gpkg")
+  require_input(gdis_path, gdis_source)
 
   # Study countries (DHS codes -> ISO3 for matching GDIS)
   countries <- read_csv("data/countries.csv", show_col_types = FALSE) %>%
@@ -30,6 +31,7 @@ hazard_correlations <- function() {
 
   # Exposure to drought/earthquake/extreme temperature at ages 5-6 -------------
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dhs_dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   # Unique cluster points as sf in WGS84 (same CRS as GDIS)

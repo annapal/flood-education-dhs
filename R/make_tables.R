@@ -19,6 +19,7 @@ make_model_table <- function(spec_name) {
   params <- model_specs[[spec_name]]
 
   # Import the data
+  require_input(paste0("data/analysis_data/", params$data, ".rds"), analysis_data_source)
   dhs_dat <- readRDS(paste0("data/analysis_data/", params$data, ".rds"))
 
   # Restrict to the model's estimation sample so the table Ns match the regression

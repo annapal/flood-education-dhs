@@ -2,6 +2,7 @@
 
 test_flooded_dist2 <- function() {
 
+  require_input("data/analysis_data/flood_56_age_10.rds", analysis_data_source)
   dhs_dat <- readRDS("data/analysis_data/flood_56_age_10.rds")
 
   buffers <- c(2, 5, 10, 20, 50, 100, 150, 200)

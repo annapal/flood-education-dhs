@@ -2,17 +2,23 @@
 # Create dataframe that has data file name and corresponding geo file name
 
 match_geo_df <- function(dat_path) {
+
+  # Where a user with DHS access obtains these files (see README step 1)
+  dhs_source <- "DHS Program, https://dhsprogram.com/ (Stata format; see README step 1)"
+
   # Find all .DTA files recursively in subfolders
   dta_files <- list.files(paste0(dat_path, "/dhs"), pattern = "\\.dta$", 
                           recursive = TRUE, 
                           full.names = TRUE, 
                           ignore.case = TRUE)
-  
+  require_found(dta_files, ".dta files", paste0(dat_path, "/dhs"), dhs_source)
+
   # Get file names for geocoded data
   geo_files <- list.files(paste0(dat_path, "/geocodes"), pattern = "\\.shp$",
                           recursive = TRUE,
                           full.names = TRUE,
                           ignore.case = TRUE)
+  require_found(geo_files, ".shp files", paste0(dat_path, "/geocodes"), dhs_source)
 
   # Get women's (IR) and men's (MR) recode data files
   ir_files <- list.files(paste0(dat_path, "/dhs-ir"), pattern = "\\.dta$",
@@ -23,6 +29,8 @@ match_geo_df <- function(dat_path) {
                          recursive = TRUE,
                          full.names = TRUE,
                          ignore.case = TRUE)
+  require_found(ir_files, ".dta files", paste0(dat_path, "/dhs-ir"), dhs_source)
+  require_found(mr_files, ".dta files", paste0(dat_path, "/dhs-mr"), dhs_source)
 
   # For each dta file, match its geocode, women's (IR) and men's (MR) files
   output <- list()
@@ -42,9 +50,9 @@ match_geo_df <- function(dat_path) {
   }
   files <- do.call(rbind, lapply(output, as.data.frame))
   
-  # Add excluded surveys here
-  excluded_surveys <- c()
-  
+  # Add excluded surveys here (dta_file paths); empty means exclude none
+  excluded_surveys <- character(0)
+
   # Remove excluded surveys
   files <- files %>%
     filter(!(dta_file %in% excluded_surveys))
