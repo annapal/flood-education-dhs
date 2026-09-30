@@ -71,5 +71,5 @@ download_era5_temp <- function() {
   })
 
   # Annual mean temperature per cluster per year
-  saveRDS(annual_temp, path.expand("~/data/era5_cluster_year.rds"))
+  saveRDS(annual_temp, file.path(out_dir, "era5_cluster_year.rds"))
 }

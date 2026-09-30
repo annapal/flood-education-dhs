@@ -100,9 +100,9 @@ run_models <- function(model_specs) {
       )
 
     # ERA5 temperature over each child's exposure window (year_age_5 to year_age_6)
-    require_input("~/data/era5_cluster_year.rds",
+    require_input("~/data/era5-dhs/era5_cluster_year.rds",
                   "Produced by download_era5_temp(); this step is commented out in _run.R and must be run once")
-    annual_era5 <- readRDS(path.expand("~/data/era5_cluster_year.rds"))
+    annual_era5 <- readRDS(path.expand("~/data/era5-dhs/era5_cluster_year.rds"))
 
     # One row per cluster per two-year window
     clusters <- dhs_dat %>%

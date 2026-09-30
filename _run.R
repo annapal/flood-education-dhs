@@ -17,7 +17,7 @@ merge_geocodes(files)
 # Link GFD to dhs clusters (saved in data/flood_clusters)
 # process_flood_tifs() # This takes a long time
 
-# Download ERA5-Land temperature (saved in ~/data/era5_cluster_year.rds)
+# Download ERA5-Land temperature (saved in ~/data/era5-dhs/era5_cluster_year.rds)
 # download_era5_temp() # Takes a long time, needs a CDS token
 
 # Merge all data together (saved in "data/dhs_dat_combined.rds")
