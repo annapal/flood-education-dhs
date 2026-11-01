@@ -30,6 +30,19 @@ run_migration_analysis <- function(who = c("mother", "head")) {
       TRUE ~ FALSE
     )) 
   
+  # filter to those with non-missing location status
+  dat_mig <- dat_mig %>% filter(!is.na(same_location)) 
+  
+  # Main regression on the subset with migration information
+  model1 <- feols(
+    no_education ~ flooded_10km_age_5_or_6 + hv104 + hv270_numeric | clustid + country_year,
+    data = dat_mig, cluster = ~clustid, weights = ~weight
+  )
+  
+  # Restrict to the regression's estimation sample so the table Ns match it
+  dat_mig <- dat_mig[obs(model1), ]
+  
+  # filter to those living in same location
   dat_mig2 <- dat_mig %>%
     filter(same_location)
 
@@ -77,7 +90,8 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   }
 
   comparison <- tab_summary(dat, "Full sample") %>%
-    left_join(tab_summary(dat_mig2, "Restrictive subset"), by = "variable") %>%
+    left_join(tab_summary(dat_mig, "Migration information available"), by = "variable") %>%
+    left_join(tab_summary(dat_mig2, "Reported not moved"), by = "variable") %>%
     mutate(variable = recode(variable,
                              n = "Sample Size",
                              mean_age = "Mean Age",
@@ -104,7 +118,7 @@ run_migration_analysis <- function(who = c("mother", "head")) {
 
   # QBA: migrants from flooded areas look unexposed, so each draw reassigns a
   # fraction of the observed-unexposed to flooded and refits
-  f <- mean(!dat_mig$same_location, na.rm = TRUE)
+  f <- 1-nrow(dat_mig2)/(nrow(dat_mig))
   message(sprintf("Migrant fraction (f): %.4f", f))
 
   model_full <- feols(
@@ -116,8 +130,10 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   mig_results <- bind_rows(
     broom::tidy(model_full, conf.int = TRUE) %>%
       mutate(sample = "Full sample", n = nobs(model_full)),
+    broom::tidy(model1, conf.int = TRUE) %>%
+      mutate(sample = "Migration information available", n = nobs(model)),
     broom::tidy(model, conf.int = TRUE) %>%
-      mutate(sample = "Restrictive subset", n = nobs(model))
+      mutate(sample = "Reported not moved", n = nobs(model))
   ) %>%
     filter(term == "flooded_10km_age_5_or_6") %>%
     mutate(migrant_fraction = f, who = who)
@@ -129,7 +145,9 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   compare_est <- mig_results %>%
     mutate(across(c(estimate, conf.low, conf.high), ~ .x * 100))
   compare_est$sample <- factor(compare_est$sample,
-                               levels = c("Restrictive subset", "Full sample"))
+                               levels = c("Reported not moved",
+                                          "Migration information available", 
+                                          "Full sample"))
 
   ggplot(compare_est, aes(x = sample, y = estimate,
                           ymin = conf.low, ymax = conf.high)) +
@@ -148,7 +166,7 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   ggsave(sprintf("figures/migration_subset_estimate_%s.png", who),
          width = 6, height = 2)
 
-  set.seed(1)
+  set.seed(1)   
   n_draws <- 100
 
   # Only observed-unexposed children are eligible for reassignment to flooded.
@@ -165,12 +183,24 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   rate_lo <- f / (1 + (diff_ratio - 1) * p1)
   p_diff <- ifelse(no_edu_unexp, diff_ratio * rate_lo, rate_lo)
 
-  # Draw migrants, reassign to flooded, refit, return the flood coefficient per draw
-  run_qba <- function(prob) {
+  # In-migration: truly unexposed children who moved into flooded areas look exposed
+  exp_rows <- which(dat$flooded_10km_age_5_or_6 == 1)
+  no_edu_exp <- dat$no_education[exp_rows] == 1
+  no_edu_exp[is.na(no_edu_exp)] <- FALSE
+
+  # Fixed in-migration rate, assumed lower than f
+  g <- f
+  # Differential: diff_ratio-fold more likely among no_education == 1, rescaled to g
+  p1_in <- mean(no_edu_exp)
+  rate_lo_in <- g / (1 + (diff_ratio - 1) * p1_in)
+  p_in_diff <- ifelse(no_edu_exp, diff_ratio * rate_lo_in, rate_lo_in)
+
+  # Draw misclassified children, flip their exposure to `to`, refit, return the flood coefficient per draw
+  run_qba <- function(prob, rows = unexp, to = 1) {
     replicate(n_draws, {
       d <- dat
-      reassign <- unexp[runif(length(unexp)) < prob]
-      d$flooded_10km_age_5_or_6[reassign] <- 1
+      reassign <- rows[runif(length(rows)) < prob]
+      d$flooded_10km_age_5_or_6[reassign] <- to
       m <- feols(
         no_education ~ flooded_10km_age_5_or_6 + hv104 + hv270_numeric | clustid + country_year,
         data = d, cluster = ~clustid, weights = ~weight
@@ -180,11 +210,13 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   }
 
   qba_coefs <- list(Differential = run_qba(p_diff),
-                    Nondifferential = run_qba(p_nondiff))
+                    Nondifferential = run_qba(p_nondiff),
+                    `In-migration differential` = run_qba(p_in_diff, exp_rows, to = 0))
 
   qba_df <- bind_rows(
-    data.frame(coef = qba_coefs$Differential * 100, scenario = "Differential"),
-    data.frame(coef = qba_coefs$Nondifferential * 100, scenario = "Nondifferential")
+    data.frame(coef = qba_coefs$Differential * 100, scenario = "Out-migration differential"),
+    data.frame(coef = qba_coefs$Nondifferential * 100, scenario = "Nondifferential"),
+    data.frame(coef = qba_coefs$`In-migration differential` * 100, scenario = "In-migration differential")
   )
 
   obs <- coef(model_full)["flooded_10km_age_5_or_6"] * 100
@@ -196,7 +228,7 @@ run_migration_analysis <- function(who = c("mother", "head")) {
       coef_reassigned_lo = quantile(coef, 0.025),
       coef_reassigned_hi = quantile(coef, 0.975)
     ) %>%
-    mutate(migrant_fraction = f, n_draws = n_draws, who = who)
+    mutate(migrant_fraction = f, in_migrant_rate = g, n_draws = n_draws, who = who)
 
   write.csv(qba, sprintf("results/migration_qba_%s.csv", who), row.names = FALSE)
 
