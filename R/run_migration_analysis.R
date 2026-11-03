@@ -131,9 +131,9 @@ run_migration_analysis <- function(who = c("mother", "head")) {
     broom::tidy(model_full, conf.int = TRUE) %>%
       mutate(sample = "Full sample", n = nobs(model_full)),
     broom::tidy(model1, conf.int = TRUE) %>%
-      mutate(sample = "Migration information available", n = nobs(model)),
+      mutate(sample = "Migration information could be linked", n = nobs(model)),
     broom::tidy(model, conf.int = TRUE) %>%
-      mutate(sample = "Reported not moved", n = nobs(model))
+      mutate(sample = "Reported not having moved", n = nobs(model))
   ) %>%
     filter(term == "flooded_10km_age_5_or_6") %>%
     mutate(migrant_fraction = f, who = who)
@@ -145,8 +145,8 @@ run_migration_analysis <- function(who = c("mother", "head")) {
   compare_est <- mig_results %>%
     mutate(across(c(estimate, conf.low, conf.high), ~ .x * 100))
   compare_est$sample <- factor(compare_est$sample,
-                               levels = c("Reported not moved",
-                                          "Migration information available", 
+                               levels = c("Reported not having moved",
+                                          "Migration information could be linked", 
                                           "Full sample"))
 
   ggplot(compare_est, aes(x = sample, y = estimate,
@@ -190,6 +190,8 @@ run_migration_analysis <- function(who = c("mother", "head")) {
 
   # Fixed in-migration rate, assumed lower than f
   g <- f
+  # Nondifferential: rate g regardless of the no_education outcome
+  p_in_nondiff <- rep(g, length(exp_rows))
   # Differential: diff_ratio-fold more likely among no_education == 1, rescaled to g
   p1_in <- mean(no_edu_exp)
   rate_lo_in <- g / (1 + (diff_ratio - 1) * p1_in)
@@ -211,12 +213,14 @@ run_migration_analysis <- function(who = c("mother", "head")) {
 
   qba_coefs <- list(Differential = run_qba(p_diff),
                     Nondifferential = run_qba(p_nondiff),
-                    `In-migration differential` = run_qba(p_in_diff, exp_rows, to = 0))
+                    `In-migration differential` = run_qba(p_in_diff, exp_rows, to = 0),
+                    `In-migration nondifferential` = run_qba(p_in_nondiff, exp_rows, to = 0))
 
   qba_df <- bind_rows(
     data.frame(coef = qba_coefs$Differential * 100, scenario = "Out-migration differential"),
-    data.frame(coef = qba_coefs$Nondifferential * 100, scenario = "Nondifferential"),
-    data.frame(coef = qba_coefs$`In-migration differential` * 100, scenario = "In-migration differential")
+    data.frame(coef = qba_coefs$Nondifferential * 100, scenario = "Out-migration nondifferential"),
+    data.frame(coef = qba_coefs$`In-migration differential` * 100, scenario = "In-migration differential"),
+    data.frame(coef = qba_coefs$`In-migration nondifferential` * 100, scenario = "In-migration nondifferential")
   )
 
   obs <- coef(model_full)["flooded_10km_age_5_or_6"] * 100
